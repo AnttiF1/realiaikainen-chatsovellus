@@ -1,9 +1,10 @@
-import { useState, useEffect, useRef } from 'react';  
+import { useState, useEffect, useRef } from 'react';  //
 import io from 'socket.io-client';  
 import RoomSelector from './components/RoomSelector';  // Huonevalitsin
 import ChatMessages from './components/ChatMessages';  // Viestilista
 import MessageInput from './components/MessageInput';  // Viestin syöttö
 import './App.css';  
+
 
 // YHDISTÄ BACKENDIIN (portti 3001)
 const socket = io('http://localhost:3001');
@@ -14,12 +15,12 @@ function App() {
   const [room, setRoom] = useState('yleinen');  // Nykyinen huone
   const [messages, setMessages] = useState([]);  // Kaikki viestit
   const [isConnected, setIsConnected] = useState(false);  // Socket-status
-/*   const messagesEndRef = useRef(null);  // Scroll-ankkuri
+  const messagesEndRef = useRef(null);  // Scroll-ankkuri
 
   // SCROLL ALAS UUSILLE VIESTEILLE
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }; */
+  };
 
   // SOCKET.LISTENERIT: Kuuntele backendin viestejä
   useEffect(() => {
@@ -60,10 +61,12 @@ function App() {
     };
   }, []);  // Tyhjä riippuvuus = aja vain kerran
 
-/*   // SCROLL UUSILLE VIESTEILLE
+
+  // SCROLL UUSILLE VIESTEILLE
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);  // Kun messages muuttuu → scroll */
+  }, [messages]);  // Kun messages muuttuu → scroll
+
 
   // LIITY HUONESEEN
   const joinRoom = (newRoom, user) => {
@@ -71,8 +74,9 @@ function App() {
     socket.emit('joinRoom', { room: newRoom, user });  // Lähetä backendille
     setRoom(newRoom);
     setUsername(user);
-/*     scrollToBottom(); */
+    scrollToBottom();
   };
+
 
   // LÄHETÄ VIESTI
   const sendMessage = (text) => {
@@ -80,23 +84,32 @@ function App() {
     socket.emit('sendMessage', { text });  // Backend muotoilee + lähettää kaikille
   };
 
+
+  // POISTU CHATISTA (takaisin login)
+  const leaveChat = () => {
+    socket.emit('leaveRoom');
+    setUsername('');
+    setMessages([]);
+    setRoom('yleinen');
+  };
+
+
   // LOGIN-NÄKYMÄ (ennen liittymistä)
   if (!username) {
     return (
       <div className="login-container">
         <h1>Liity chattiin</h1>
-        <header>
-          Yhteys: {isConnected ? '✅' : '❌'} | {room} | {username}
-          <button onClick={() => {setUsername(''); setMessages([]);}}>
-            Poistu chattiin
-          </button>
+        {/* STATUS HEADER */}
+        <header style={{fontSize: '0.9em', color: 'gray'}}>
+          Yhteys: {isConnected ? '✅' : '❌'} | Huone: {room}
         </header>
         <input
           type="text"
-          placeholder="Nimimerkki"
+          placeholder="Nimimerkki (tyhjä=Anonymous)"
           onKeyDown={(e) => {
             if (e.key === 'Enter') {
-              joinRoom(room, e.target.value);  // Enter = liity
+              const name = e.target.value.trim() || 'Anonymous';  // NIMETTÖMÄ OK!
+              joinRoom(room, name);
             }
           }}
         />
@@ -106,13 +119,16 @@ function App() {
   }
 
 
-  
-
   // CHAT-NÄKYMÄ (kun liitytty)
   return (
     <div className="app">
-      {/* HEADER: Status + huone */}
-      <header>Yhteys: {isConnected ? '✅' : '❌'} | Huone: {room}</header>
+      {/* HEADER: Status + huone + poistuminen */}
+      <header>
+        Yhteys: {isConnected ? '✅' : '❌'} | Huone: {room} | {username}
+        <button onClick={leaveChat} style={{float: 'right'}}>
+          🚪 Poistu chattiin
+        </button>
+      </header>
       
       {/* HUONEVALITSEJA */}
       <RoomSelector room={room} setRoom={(newRoom) => joinRoom(newRoom, username)} />
@@ -124,7 +140,7 @@ function App() {
       <MessageInput sendMessage={sendMessage} />
       
       {/* SCROLL-ANKKURI (piilotettu) */}
-{/*       <div ref={messagesEndRef} /> */}
+      <div ref={messagesEndRef} />
     </div>
   );
 }
