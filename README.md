@@ -1,6 +1,7 @@
 Reaaliaikainen Chat-sovellus
 
-Reaaliaikainen chat-sovellus, jossa käyttäjät voivat liittyä nimettömänä tai nimettynä eri keskusteluhuoneisiin ja lähettää viestejä reaaliajassa. Huoneeseen liityttäessä näkyy huoneen aiemmat viestit.
+Reaaliaikainen chat-sovellus, jossa käyttäjät voivat liittyä nimettömänä tai nimettynä eri keskusteluhuoneisiin ja lähettää viestejä reaaliajassa.
+Huoneeseen liityttäessä näkyy huoneen aiemmat viestit.
 
 Teknologiat
 
@@ -18,9 +19,9 @@ Keskusteluhuoneet
 
 Huoneen vaihto
 
-Viestihistoria huonekohtaisesti
+Huonekohtainen viestihistoria
 
-Nimettömyys
+Nimettömyys tai nimimerkin käyttö
 
 Asennus ja käynnistys
 Backend
@@ -41,16 +42,18 @@ npm run dev
 
 Käyttö
 
-Avaa sovellus selaimessa (http://localhost:5173)
+Avaa sovellus selaimessa:
+http://localhost:5173
 
 Kirjoita nimi tai liity anonyyminä
 
-Lähetä viestejä reaaliajassa
+Liity huoneeseen ja lähetä viestejä reaaliajassa
 
 Vaihda huonetta tarvittaessa
 
-Testaa avaamalla sovellus kahteen selaimeen ja liity samaan huoneeseen.
+Reaaliaikaisuuden testaus:
+Avaa sovellus kahteen eri selaimeen ja liity samaan huoneeseen.
 
 Huomio
 
-Viestihistoria tallennetaan muistiin ja nollautuu, kun backend käynnistetään uudelleen.
+Viestihistoria tallennetaan backendissä muistiin ja nollautuu, kun backend käynnistetään uudelleen.
