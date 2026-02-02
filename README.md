@@ -1,6 +1,6 @@
 Reaaliaikainen Chat-sovellus
 
-Reaaliaikainen chat-sovellus, jossa käyttäjät voivat liittyä nimettömänä eri keskusteluhuoneisiin ja lähettää viestejä reaaliajassa. Huoneeseen liityttäessä näkyy huoneen aiemmat viestit.
+Reaaliaikainen chat-sovellus, jossa käyttäjät voivat liittyä nimettömänä tai nimettynä eri keskusteluhuoneisiin ja lähettää viestejä reaaliajassa. Huoneeseen liityttäessä näkyy huoneen aiemmat viestit.
 
 Teknologiat
 
@@ -35,20 +35,15 @@ PORT=3001
 CLIENT_ORIGIN=http://localhost:5173
 
 Frontend
-cd chat-frontend
+cd reaaliaikainen-chatsovellus/frontend
 npm install
 npm run dev
-
-
-chat-frontend/.env
-
-VITE_SOCKET_URL=http://localhost:3001
 
 Käyttö
 
 Avaa sovellus selaimessa (http://localhost:5173)
 
-Kirjoita huoneen nimi ja liity
+Kirjoita nimi tai liity anonyyminä
 
 Lähetä viestejä reaaliajassa
 
