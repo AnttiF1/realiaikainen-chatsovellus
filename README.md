@@ -45,7 +45,7 @@ Käyttö
 Avaa sovellus selaimessa:
 http://localhost:5173
 
-Kirjoita nimi tai liity anonyyminä
+Kirjoita nimi tai liity anonyyminä painamalla enter kun nimimerkki on valmis tyhjä = anonyymi/anonymous
 
 Liity huoneeseen ja lähetä viestejä reaaliajassa
 
