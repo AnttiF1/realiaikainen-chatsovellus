@@ -1,4 +1,4 @@
-function ChatMessages({ messages }) {
+function ChatMessages({ messages, endRef }) {
   return (
     <div className="messages">
       {messages.map((msg) => (  // ← id pakollinen nyt
@@ -9,9 +9,9 @@ function ChatMessages({ messages }) {
           </span>
         </div>
       ))}
+      <div ref={endRef} />
     </div>
   );
 }
-
 
 export default ChatMessages;

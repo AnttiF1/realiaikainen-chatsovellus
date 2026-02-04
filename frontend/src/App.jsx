@@ -1,22 +1,26 @@
-import { useState, useEffect, useRef } from 'react';//useRef on kuin NUORA joka kiinnittyy HTML-elementtiin!
+import { useState, useEffect, useRef } from 'react'; //useRef on kuin NUORA joka kiinnittyy HTML-elementtiin!
 import io from 'socket.io-client';
 import RoomSelector from './components/RoomSelector';
 import ChatMessages from './components/ChatMessages';
 import MessageInput from './components/MessageInput';
 import './App.css';
+import useRateLimitBanner from './hooks/UseRateLimitBanner';
+
+const URL = import.meta.env.VITE_SOCKET_URL  // Varmistaa että ympäristömuuttuja ladataan oikein
 
 // YHDISTÄ BACKENDIIN
-const socket = io('http://localhost:3001');
+const socket = io(URL || 'http://localhost:3001');
 
 function App() {
-  // TILA: Käyttäjätiedot ja viestit
   const [username, setUsername] = useState('');  // Nimimerkki
   const [room, setRoom] = useState('yleinen');  // Nykyinen huone
   const [messages, setMessages] = useState([]);  // Kaikki viestit
   const [isConnected, setIsConnected] = useState(false);  // Socket-status
   const messagesEndRef = useRef(null);  // Scroll-ankkuri
 
-  const [showChat, setShowChat] = useState(false);  // showChat on kuin KYTKIN joka päättää mikä näkymä näkyy!
+  const [showChat, setShowChat] = useState(false);  // showChat kytkin,  joka päättää mikä näkymä näkyy!
+
+  const { banner, isRateLimited, secondsLeft } = useRateLimitBanner(socket);
 
   // SCROLLAA ALAS UUSILLE VIESTEILLE
   const scrollToBottom = () => {
@@ -25,40 +29,35 @@ function App() {
 
   // SOCKET.LISTENERIT: Kuuntele backendin viestejä
   useEffect(() => {
-    // Kun yhteys muodostuu
-    socket.on('connect', () => setIsConnected(true));
-    socket.on('disconnect', () => setIsConnected(false));
-    
-    // Kun liitytään huoneeseen: Lataa historia
-    socket.on('roomHistory', (data) => {
-      console.log('Historia saatu:', data.messages.length, 'viestiä');
-      setMessages(data.messages || []);
-    });
-    
-    // Uusi viesti huoneessa
-    socket.on('newMessage', (data) => {
-      console.log('Uusi viesti:', data.message.text);
+
+    // Nimetyt handlerit -> voidaan poistaa täsmällisesti cleanupissa
+    const onConnect = () => setIsConnected(true);
+    const onDisconnect = () => setIsConnected(false);
+    const onRoomHistory = (data) => {
+      console.log("Historia saatu:", data?.messages?.length || 0, "viestiä");
+      setMessages(data?.messages || []);
+      };
+    const onNewMessage = (data) => {
+      console.log("Uusi viesti:", data?.message?.text);
       setMessages((prev) => [...prev, data.message]);
-    });
-    
-    // Järjestelmäilmoitus (esim. "Leevi liittyi")
-    socket.on('systemMessage', (msg) => {
+    };
+    const onSystemMessage = (msg) => {
       setMessages((prev) => [...prev, msg]);
-    });
-    
-    // Virhe backendiltä
-    socket.on('errorMessage', (error) => {
-      alert(error.message);
-    });
+    };
+
+    socket.on("connect", onConnect);
+    socket.on("disconnect", onDisconnect);
+    socket.on("roomHistory", onRoomHistory);
+    socket.on("newMessage", onNewMessage);
+    socket.on("systemMessage", onSystemMessage);
 
     // PUHDISTUS: Poista listenerit komponentti katoaa
     return () => {
-      socket.off('connect');
-      socket.off('disconnect');
-      socket.off('roomHistory');
-      socket.off('newMessage');
-      socket.off('systemMessage');
-      socket.off('errorMessage');
+      socket.off("connect", onConnect);
+      socket.off("disconnect", onDisconnect);
+      socket.off("roomHistory", onRoomHistory);
+      socket.off("newMessage", onNewMessage);
+      socket.off("systemMessage", onSystemMessage);
     };
   }, []);
 
@@ -70,6 +69,7 @@ function App() {
   // LIITY HUONESEEN
   const joinRoom = (newRoom, user) => {
     console.log('Liity:', newRoom, user);
+    setMessages([]);
     socket.emit('joinRoom', { room: newRoom, user });  // Lähetä backendille
     setRoom(newRoom);
     setUsername(user);
@@ -92,61 +92,85 @@ function App() {
     socket.emit('sendMessage', { text });  // Backend muotoilee + lähettää kaikille
   };
 
+
+  // ------
+  // RENDERÖI
+  // ------
+
   // LOGIN (ei liitytty)
-    if (!showChat) {
+  if (!showChat) {
     return (
-        <div className="login-container">
-        <h1>🎮 Reaaliaikainen Chat</h1>
-        <label>Syötä nimimerkki:</label>
+      <div className="login-container">
+        <h1>Reaaliaikainen Chat</h1>
+
+        <label>Anna nimimerkkisi:</label>
         <input
-            type="text"
-            placeholder="Nimimerkki (tyhjä=Anonymous)"
-            onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-                const name = e.target.value.trim() || 'Anonymous';  // ← TYHJÄ = Anonymous!
-                joinRoom(room, name);
+          type="text"
+          placeholder="Nimimerkki (tyhjä=Anonymous)"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              const name = username.trim() || "Anonymous";
+              joinRoom(room, name);
             }
-            }}
+          }}
         />
+
         <label>Valitse huone:</label>
         <RoomSelector room={room} setRoom={setRoom} />
-        <p style={{ fontSize: '0.8em', color: 'gray' }}>
-            Yhteys: {isConnected ? '✅' : '❌'}
-        </p>
-        </div>
+
+        <button
+          onClick={() => {
+            const name = username.trim() || "Anonymous";
+            joinRoom(room, name);
+          }}
+          disabled={!isConnected}
+        >
+          Liity huoneeseen
+        </button>
+
+        <p>Yhteys: {isConnected ? "✅" : "❌"}</p>
+      </div>
     );
-    }
-// CHAT (liitytty)
-return (
-  <div className="app">
-    <header>
-      🔗 {isConnected ? '✅' : '❌'} | 
-      🏠 {room.toUpperCase()} | 
-      👤 {username} | 
-      <button onClick={leaveRoom}>🚪 Poistu</button>
-    </header>
-    
-    {/* HUONEVALITSIJA */}
-    <div className="room-section">
-      <label>Valitse huone:</label>
-      <RoomSelector 
-        room={room} 
-        setRoom={(newRoom) => joinRoom(newRoom, username)} 
-      />
+  }
+
+  // CHAT (liitytty)
+  return (
+    <div className="app">
+      <header>
+        Yhdistetty: {isConnected ? "✅" : "❌"} | Huone: {room.toUpperCase()} | Käyttäjä:{" "}
+        {username} <button onClick={leaveRoom}>Poistu</button>
+      </header>
+
+      {/* HUONEVALITSIJA */}
+      <div className="room-section">
+        <label>Valitse huone:</label>
+        <RoomSelector room={room} setRoom={(newRoom) => joinRoom(newRoom, username)} />
+      </div>
+
+      {/* VIESTILISTA */}
+      <div className="messages-section">
+        <label>Viestit:</label>
+
+        {/* TÄRKEÄ: scroll-ankkuri pitää olla viestilistan sisällä (tai sen scrollattavan containerin sisällä) */}
+        <ChatMessages messages={messages} endRef={messagesEndRef} />
+      </div>
+
+      {banner && (
+        <div className="banner">
+          {banner} {isRateLimited ? `(odota ${secondsLeft}s)` : null}
+        </div>
+      )}
+
+      {/* VIESTIN SYÖTTÖ */}
+      <div className="input-section">
+        <label>Lähetä viesti:</label>
+        <MessageInput sendMessage={sendMessage} disabled={!isConnected || isRateLimited} />
+      </div>
     </div>
-    
-    {/* VIESTILISTA */}
-    <div className="messages-section">
-      <label>Viestit:</label>
-      <ChatMessages messages={messages} />
-    </div>
-    
-    {/* VIESTIN SYÖTTÖ */}
-    <div className="input-section">
-      <label>Lähetä viesti:</label>
-      <MessageInput sendMessage={sendMessage} />
-    </div>
-  </div>
-);
+  );
+
 }
+
 export default App;
