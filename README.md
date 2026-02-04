@@ -27,21 +27,27 @@ Nimettömyys tai nimimerkin käyttö
 
 Lataa gitistä zippi tai git clone
 
-Backend
+## Backend
 
 cd backend
+
 npm install
+
 npm start
 
 
 backend/.env
 
 PORT=3001
+
 MONGODBURI=(connectstringi)
 
-Frontend
+## Frontend
+
 cd reaaliaikainen-chatsovellus/frontend
+
 npm install
+
 npm run dev
 
 ## Käyttö
