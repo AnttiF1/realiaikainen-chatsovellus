@@ -1,17 +1,17 @@
-Reaaliaikainen Chat-sovellus
+## Reaaliaikainen Chat-sovellus
 
 Reaaliaikainen chat-sovellus, jossa käyttäjät voivat liittyä nimettömänä tai nimettynä eri keskusteluhuoneisiin ja lähettää viestejä reaaliajassa.
 Huoneeseen liityttäessä näkyy huoneen aiemmat viestit.
 
-Teknologiat
+## Teknologiat
 
 Frontend: Vite + React
 
-Backend: Node.js + Express
+Backend: Node.js + Express + Mongoose
 
 Reaaliaikaisuus: Socket.io
 
-Ominaisuudet
+## Ominaisuudet
 
 Reaaliaikainen viestien lähetys ja vastaanotto
 
@@ -23,8 +23,12 @@ Huonekohtainen viestihistoria
 
 Nimettömyys tai nimimerkin käyttö
 
-Asennus ja käynnistys
+## Asennus ja käynnistys
+
+Lataa gitistä zippi tai git clone
+
 Backend
+
 cd backend
 npm install
 npm start
@@ -33,14 +37,14 @@ npm start
 backend/.env
 
 PORT=3001
-CLIENT_ORIGIN=http://localhost:5173
+MONGODBURI=(connectstringi)
 
 Frontend
 cd reaaliaikainen-chatsovellus/frontend
 npm install
 npm run dev
 
-Käyttö
+## Käyttö
 
 Avaa sovellus selaimessa:
 http://localhost:5173
@@ -53,7 +57,3 @@ Vaihda huonetta tarvittaessa
 
 Reaaliaikaisuuden testaus:
 Avaa sovellus kahteen eri selaimeen ja liity samaan huoneeseen.
-
-Huomio
-
-Viestihistoria tallennetaan backendissä muistiin ja nollautuu, kun backend käynnistetään uudelleen.
