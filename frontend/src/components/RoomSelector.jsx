@@ -1,4 +1,4 @@
-const rooms = ['yleinen', 'pelit', 'off-topic'];
+const rooms = ["yleinen", "teknologia", "Riveria", "urheilu", "musiikki", "elokuvat", "politiikka"];
 
 function RoomSelector({ room, setRoom }) {
   return (
